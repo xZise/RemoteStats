@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteStats", "RemoteStats\RemoteStats.csproj", "{6F7EC6E3-1109-4B96-9F2F-7FAC09D7E1C5}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6F7EC6E3-1109-4B96-9F2F-7FAC09D7E1C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F7EC6E3-1109-4B96-9F2F-7FAC09D7E1C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F7EC6E3-1109-4B96-9F2F-7FAC09D7E1C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F7EC6E3-1109-4B96-9F2F-7FAC09D7E1C5}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2385B20D-002C-4A8B-8091-6CEE9E8E278C}
+	EndGlobalSection
+EndGlobal
