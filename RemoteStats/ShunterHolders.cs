@@ -34,21 +34,20 @@ namespace DvRemoteStats
 
     public sealed class TempShunterHolder : ValueDisplay<ShunterLocoSimulation>
     {
-        protected override char GetValue(ShunterLocoSimulation simulation)
+        protected override string GetValue(ShunterLocoSimulation simulation)
         {
             float temp = simulation.engineTemp.value;
-            int tensTemp = Mathf.RoundToInt(temp / 10);
-            if (tensTemp < 4)
+            if (temp < 40)
             {
-                return 'c';
+                return "c";
             }
-            else if (tensTemp > 9)
+            else if (temp > 99)
             {
-                return 'H';
+                return "H";
             }
             else
             {
-                return tensTemp.ToString()[0];
+                return StatsReader.FormatValue(temp / 10);
             }
         }
 

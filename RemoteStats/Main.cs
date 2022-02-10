@@ -30,10 +30,11 @@ namespace DvRemoteStats
     {
         public string GetDisplayString(T simulation)
         {
-            return new string(new[] { Typename, ':', GetValue(simulation) });
+            string prefix = new string(new[] { Typename, ':' });
+            return prefix + GetValue(simulation);
         }
 
-        protected abstract char GetValue(T simulation);
+        protected abstract string GetValue(T simulation);
 
         public abstract char Typename { get; }
     }
@@ -46,9 +47,9 @@ namespace DvRemoteStats
 
         public override char Typename => 'X';
 
-        protected override char GetValue(LocoSimulation simulation)
+        protected override string GetValue(LocoSimulation simulation)
         {
-            return 'X';
+            return "X";
         }
     }
 
@@ -56,32 +57,23 @@ namespace DvRemoteStats
     {
         public abstract SimComponent GetComponent(T simulation);
 
-        protected override char GetValue(T simulation)
+        protected override string GetValue(T simulation)
         {
             SimComponent component = GetComponent(simulation);
             if (component.value < component.min)
             {
-                return 'u';
+                return "u";
             }
             else if (component.value > component.max)
             {
-                return 'o';
+                return "o";
             }
             else
             {
                 float v = component.value - component.min;
                 v /= component.max;
                 v *= 10;
-                int dec = Mathf.RoundToInt(v);
-                if (dec > 9)
-                {
-                    dec = 9;
-                }
-                else if (dec < 0)
-                {
-                    dec = 0;
-                }
-                return dec.ToString()[0];
+                return StatsReader.FormatValue(v);
             }
         }
     }
@@ -127,6 +119,21 @@ namespace DvRemoteStats
                 display = holders[index];
             }
             return display.GetDisplayString(simulation);
+        }
+
+        public static string FormatValue(float value)
+        {
+            int flooredValue = Mathf.FloorToInt(value);
+            if (flooredValue < 0)
+            {
+                flooredValue++;
+            }
+            string result = flooredValue.ToString();
+            if (value - flooredValue >= 0.5)
+            {
+                result += ".";
+            }
+            return result;
         }
     }
 
