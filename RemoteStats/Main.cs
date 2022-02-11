@@ -78,39 +78,48 @@ namespace DvRemoteStats
         }
     }
 
-    public class StatsReader
+    public interface IReader
     {
-        public static readonly ValueDisplay<ShunterLocoSimulation>[] ShunterHolders = new ValueDisplay<ShunterLocoSimulation>[]
-        {
-            new FuelShunterHolder(),
-            new OilShunterHolder(),
-            new SandShunterHolder(),
-            new TempShunterHolder()
-        };
-        public static readonly ValueDisplay<DieselLocoSimulation>[] DieselHolders = new ValueDisplay<DieselLocoSimulation>[]
-        {
-            new FuelDieselHolder(),
-            new OilDieselHolder(),
-            new SandDieselHolder(),
-            new TempDieselHolder()
-        };
+        bool Paired { get; }
+        int Count { get; }
 
-        public static string GetDisplayString(LocoControllerShunter shunter, int index)
+        string GetDisplayString(int index);
+    }
+
+    public sealed class NoneReader : IReader
+    {
+        public readonly static NoneReader Instance = new NoneReader();
+
+        private NoneReader() { }
+
+        public bool Paired => false;
+
+        public int Count => 0;
+
+        public string GetDisplayString(int index)
         {
-            ShunterLocoSimulation sim = shunter.sim();
-            return GetDisplayString(sim, ShunterHolders, index);
+            return "N:A";
+        }
+    }
+
+    public class Reader<T> : IReader where T : LocoSimulation
+    {
+        public bool Paired => true;
+        public int Count => holders.Count;
+
+        private readonly IReadOnlyList<IValueDisplay<T>> holders;
+        private readonly T simulation;
+
+        public Reader(IReadOnlyList<IValueDisplay<T>> holders, T simulation)
+        {
+            this.holders = holders;
+            this.simulation = simulation;
         }
 
-        public static string GetDisplayString(LocoControllerDiesel shunter, int index)
-        {
-            DieselLocoSimulation sim = shunter.sim();
-            return GetDisplayString(sim, DieselHolders, index);
-        }
-
-        private static string GetDisplayString<T>(T simulation, IValueDisplay<T>[] holders, int index) where T : LocoSimulation
+        public string GetDisplayString(int index)
         {
             IValueDisplay<T> display;
-            if (index < 0 || index >= holders.Length)
+            if (index < 0 || index >= holders.Count)
             {
                 display = NullValueDisplay.Instance;
             }
@@ -120,7 +129,38 @@ namespace DvRemoteStats
             }
             return display.GetDisplayString(simulation);
         }
+    }
 
+    public static class Readers
+    {
+        private static readonly IReadOnlyList<IValueDisplay<ShunterLocoSimulation>> ShunterHolders = Array.AsReadOnly(new ValueDisplay<ShunterLocoSimulation>[]
+        {
+            new FuelShunterHolder(),
+            new OilShunterHolder(),
+            new SandShunterHolder(),
+            new TempShunterHolder()
+        });
+        private static readonly IReadOnlyList<IValueDisplay<DieselLocoSimulation>> DieselHolders = Array.AsReadOnly(new ValueDisplay<DieselLocoSimulation>[]
+        {
+            new FuelDieselHolder(),
+            new OilDieselHolder(),
+            new SandDieselHolder(),
+            new TempDieselHolder()
+        });
+
+        public static IReader GetReader(ILocomotiveRemoteControl locomotive)
+        {
+            switch (locomotive)
+            {
+                case LocoControllerShunter shunter: return new Reader<ShunterLocoSimulation>(ShunterHolders, shunter.sim());
+                case LocoControllerDiesel diesel: return new Reader<DieselLocoSimulation>(DieselHolders, diesel.sim());
+                default: return NoneReader.Instance;
+            }
+        }
+    }
+
+    public class StatsReader
+    {
         public static string FormatValue(float value)
         {
             int flooredValue = Mathf.FloorToInt(value);
@@ -144,19 +184,8 @@ namespace DvRemoteStats
         static bool Prefix(LocomotiveRemoteController __instance, int delta)
         {
             LocomotiveRemoteControllerAdv adv = __instance.createAdv();
-            int numHolders;
-            switch (adv.pairedLocomotive)
-            {
-                case LocoControllerShunter _:
-                    numHolders = StatsReader.ShunterHolders.Length;
-                    break;
-                case LocoControllerDiesel _:
-                    numHolders = StatsReader.DieselHolders.Length;
-                    break;
-                default:
-                    numHolders = 0;
-                    break;
-            }
+            IReader reader = Readers.GetReader(adv.pairedLocomotive);
+            int numHolders = reader.Count;
             if (numHolders > 0)
             {
                 adv.selectedCoupler += delta;
@@ -199,25 +228,9 @@ namespace DvRemoteStats
         static bool Prefix(LocomotiveRemoteController __instance)
         {
             LocomotiveRemoteControllerAdv adv = __instance.createAdv();
-            bool paired;
-            string text;
-            switch (adv.pairedLocomotive)
-            {
-                case LocoControllerShunter shunter:
-                    paired = true;
-                    text = StatsReader.GetDisplayString(shunter, adv.selectedCoupler);
-                    break;
-                case LocoControllerDiesel diesel:
-                    paired = true;
-                    text = StatsReader.GetDisplayString(diesel, adv.selectedCoupler);
-                    break;
-                default:
-                    paired = false;
-                    text = "N:A";
-                    break;
-            }
-            __instance.couplerSignDisplay.Display(paired ? "+" : "-");
-            __instance.couplerDisplay.Display(text);
+            IReader reader = Readers.GetReader(adv.pairedLocomotive);
+            __instance.couplerSignDisplay.Display(reader.Paired ? "+" : "-");
+            __instance.couplerDisplay.Display(reader.GetDisplayString(adv.selectedCoupler));
             return false;
         }
     }
