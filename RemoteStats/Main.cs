@@ -183,7 +183,7 @@ namespace DvRemoteStats
 
         static bool Prefix(LocomotiveRemoteController __instance, int delta)
         {
-            LocomotiveRemoteControllerAdv adv = __instance.createAdv();
+            LocomotiveRemoteControllerAdv adv = new LocomotiveRemoteControllerAdv(__instance);
             IReader reader = Readers.GetReader(adv.pairedLocomotive);
             int numHolders = reader.Count;
             if (numHolders > 0)
@@ -227,7 +227,7 @@ namespace DvRemoteStats
     {
         static bool Prefix(LocomotiveRemoteController __instance)
         {
-            LocomotiveRemoteControllerAdv adv = __instance.createAdv();
+            LocomotiveRemoteControllerAdv adv = new LocomotiveRemoteControllerAdv(__instance);
             IReader reader = Readers.GetReader(adv.pairedLocomotive);
             __instance.couplerSignDisplay.Display(reader.Paired ? "+" : "-");
             __instance.couplerDisplay.Display(reader.GetDisplayString(adv.selectedCoupler));
@@ -279,11 +279,6 @@ namespace DvRemoteStats
         public static ShunterLocoSimulation sim(this LocoControllerShunter controller)
         {
             return (ShunterLocoSimulation)_sim.GetValue(controller);
-        }
-
-        public static LocomotiveRemoteControllerAdv createAdv(this LocomotiveRemoteController controller)
-        {
-            return new LocomotiveRemoteControllerAdv(controller);
         }
     }
 }
