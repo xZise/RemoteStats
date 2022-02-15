@@ -1,4 +1,4 @@
-﻿namespace DvRemoteStats
+﻿namespace RemoteStats
 {
     public sealed class FuelDieselHolder : ValueHolder<DieselLocoSimulation>
     {

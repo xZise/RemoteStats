@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace DvRemoteStats
+namespace RemoteStats
 {
     public sealed class FuelShunterHolder : ValueHolder<ShunterLocoSimulation>
     {

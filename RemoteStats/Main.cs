@@ -5,7 +5,7 @@ using UnityModManagerNet;
 using Harmony12;
 using UnityEngine;
 
-namespace DvRemoteStats
+namespace RemoteStats
 {
     public class Main
     {        
